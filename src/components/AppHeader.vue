@@ -8,12 +8,12 @@ export default {
         return {
             store,
             query: "",
-            movies: []
+            movies: [],
         }
     },
     methods: {
         searchMovies() {
-            const url = `${store.url}&query=${this.query}`;
+            const url = `${store.url}api_key=${store.apiKey}&query=${this.query}`;
 
             axios.get(url)
                 .then(risposta => {
