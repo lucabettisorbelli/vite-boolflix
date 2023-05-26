@@ -1,6 +1,7 @@
 <script>
 import { store } from "../data/store.js";
 import axios from "axios";
+
 export default {
     name: "AppHeader",
     data() {
@@ -21,6 +22,13 @@ export default {
                 });
             }
         },
+        searchSeries() {
+            const url = `https://api.themoviedb.org/3/search/tv?api_key=${store.apiKey}&query=${this.query}`;
+            axios.get(url).then((risposta) => {
+                this.store.movies = risposta.data.results;
+                console.log(risposta.data);
+            });
+        },
         getTopMovies() {
             const url = `https://api.themoviedb.org/3/movie/top_rated?api_key=${store.apiKey}`;
             axios.get(url).then((risposta) => {
@@ -34,6 +42,8 @@ export default {
     }
 };
 </script>
+
+
 <template>
     <header>
         <div class="container">
