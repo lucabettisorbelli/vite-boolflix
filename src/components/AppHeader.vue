@@ -8,18 +8,17 @@ export default {
         return {
             store,
             query: "",
-            movies: [],
         }
     },
     methods: {
         searchMovies() {
             const url = `${store.url}api_key=${store.apiKey}&query=${this.query}`;
-
             axios.get(url)
                 .then(risposta => {
-                    this.movies = risposta.data.results;
+                    this.store.movies = risposta.data.results;
+                    console.log(risposta.data)
                 });
-        }
+        },
     }
 }
 </script>
@@ -39,16 +38,17 @@ export default {
                 </div>
             </div>
             <div class="boxFilm">
-                <div class="imgArea">
-                    <div class="box">
-                        <ul>
-                            <li v-for="movie in movies">
-                                <h2>{{ movie.title }}</h2>
-                                <p>Titolo originale: {{ movie.original_title }}</p>
-                                <p>Lingua: {{ movie.original_language }}</p>
-                                <p>Voto: {{ movie.vote_average }}</p>
-                            </li>
-                        </ul>
+                <div class="cardsArea">
+                    <div v-for="movie in store.movies" class="card">
+                        <div class="cardImg">
+                            <img :src="`${store.imgPath}${movie.poster_path}`" />
+                        </div>
+                        <div class="cardInfo">
+                            <h2>{{ movie.title }}</h2>
+                            <p>Titolo originale: {{ movie.original_title }}</p>
+                            <p>Lingua: {{ movie.original_language }}</p>
+                            <p>Voto: {{ movie.vote_average }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -74,6 +74,30 @@ export default {
 
     .input {
         padding-right: 20px;
+    }
+}
+
+.cardsArea {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    .card {
+        width: calc(100% / 5);
+        padding: 5px;
+
+        .cardImg {
+            height: 60%;
+
+            img {
+                width: 100%;
+                height: 100%;
+            }
+        }
+
+        .cardInfo {
+            height: 40%;
+        }
     }
 }
 </style>
