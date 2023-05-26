@@ -12,6 +12,9 @@
     "@popperjs/core": "^2.11.7",
     "axios": "^1.4.0",
     "bootstrap": "^5.2.3",
+    "install": "^0.13.0",
+    "language-icons": "^0.3.0",
+    "npm": "^9.6.7",
     "vue": "^3.2.47"
   },
   "devDependencies": {

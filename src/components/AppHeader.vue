@@ -1,28 +1,39 @@
 <script>
-import { store } from "../data/store.js"
-import axios from 'axios'
-
+import { store } from "../data/store.js";
+import axios from "axios";
 export default {
-    name: 'AppHeader',
+    name: "AppHeader",
     data() {
         return {
             store,
             query: "",
-        }
+        };
     },
     methods: {
         searchMovies() {
-            const url = `${store.url}api_key=${store.apiKey}&query=${this.query}`;
-            axios.get(url)
-                .then(risposta => {
+            if (this.query === "") {
+                this.getTopMovies();
+            } else {
+                const url = `${store.url}api_key=${store.apiKey}&query=${this.query}`;
+                axios.get(url).then((risposta) => {
                     this.store.movies = risposta.data.results;
-                    console.log(risposta.data)
+                    console.log(risposta.data);
                 });
+            }
         },
+        getTopMovies() {
+            const url = `https://api.themoviedb.org/3/movie/top_rated?api_key=${store.apiKey}`;
+            axios.get(url).then((risposta) => {
+                this.store.movies = risposta.data.results;
+                console.log(risposta.data);
+            });
+        }
+    },
+    mounted() {
+        this.getTopMovies();
     }
-}
+};
 </script>
-
 <template>
     <header>
         <div class="container">
@@ -31,7 +42,7 @@ export default {
             </div>
             <div class="boxSearch">
                 <div class="input">
-                    <input type="text" v-model="query" @keyup="searchMovies" placeholder="Cerca film">
+                    <input type="text" v-model="query" @keyup="searchMovies" placeholder="Cerca film" />
                 </div>
                 <div class="button">
                     <button @click="searchMovies">Cerca</button>
@@ -41,12 +52,17 @@ export default {
                 <div class="cardsArea">
                     <div v-for="movie in store.movies" class="card">
                         <div class="cardImg">
-                            <img :src="`${store.imgPath}${movie.poster_path}`" />
+                            <img v-if="movie.poster_path == null"
+                                src="https://th.bing.com/th/id/R.ae0fc67b38f2d8fee7b3976df6ec8acc?rik=7wdWtRhFfNGMhQ&pid=ImgRaw&r=0" />
+                            <img v-else :src="`${store.imgPath}${movie.poster_path}`" />
                         </div>
                         <div class="cardInfo">
                             <h2>{{ movie.title }}</h2>
                             <p>Titolo originale: {{ movie.original_title }}</p>
-                            <p>Lingua: {{ movie.original_language }}</p>
+                            <div class="iconBox">
+                                <img :alt="movie.original_language"
+                                    :src="`https://unpkg.com/language-icons/icons/${movie.original_language}.svg`">
+                            </div>
                             <p>Voto: {{ movie.vote_average }}</p>
                         </div>
                     </div>
@@ -71,6 +87,7 @@ export default {
 
 .boxSearch {
     display: flex;
+    padding-bottom: 20px;
 
     .input {
         padding-right: 20px;
@@ -97,6 +114,21 @@ export default {
 
         .cardInfo {
             height: 40%;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+
+            .iconBox {
+                width: 2rem;
+                height: 2rem;
+
+                img {
+                    width: 100%;
+                    height: 100%;
+                }
+
+            }
         }
     }
 }
