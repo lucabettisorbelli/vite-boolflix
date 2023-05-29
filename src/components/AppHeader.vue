@@ -8,51 +8,49 @@ export default {
     data() {
         return {
             store,
-            queryFilm: "",
-            querySeries: "",
+            query: ""
         };
     },
     computed: {
         searchBoth() {
-            if (this.queryFilm === "" && this.querySeries === "") {
-                return store.movies;
-            } else if (this.queryFilm !== "") {
+            if (this.query === "") {
                 return store.movies;
             } else {
-                return store.series;
+                return store.movies.concat(store.series);
             }
         },
     },
     methods: {
-        searchMovies() {
-            if (this.queryFilm === "") {
+        search() {
+            if (this.query === "") {
                 this.getTopMovies();
             } else {
-                const url = `${store.url}api_key=${store.apiKey}&query=${this.queryFilm}`;
-                axios.get(url).then((risposta) => {
-                    this.store.movies = risposta.data.results;
-                    console.log('film', this.store.movies);
-
+                // chiamata Film
+                const movieUrl = `${store.url}api_key=${store.apiKey}&query=${this.query}`;
+                axios.get(movieUrl).then((response) => {
+                    this.store.movies = response.data.results;
+                    console.log('film', this.store.movies)
                 });
-            }
-        },
-        searchSeries() {
-            if (this.querySeries === "") {
-                this.getTopMovies();
-            } else {
-                const url = `https://api.themoviedb.org/3/search/tv?api_key=${store.apiKey}&query=${this.querySeries}`;
-                axios.get(url).then((risposta) => {
-                    this.store.series = risposta.data.results;
-                    console.log('serie', this.store.series);
+                // chiamata Serie
+                const seriesUrl = `https://api.themoviedb.org/3/search/tv?api_key=${store.apiKey}&query=${this.query}`;
+                axios.get(seriesUrl).then((response) => {
+                    this.store.series = response.data.results;
+                    console.log('serie', this.store.movies)
                 });
             }
         },
         getTopMovies() {
             const url = `https://api.themoviedb.org/3/movie/top_rated?api_key=${store.apiKey}`;
-            axios.get(url).then((risposta) => {
-                this.store.movies = risposta.data.results;
+            axios.get(url).then((response) => {
+                this.store.movies = response.data.results;
             });
         }
+    },
+    getTopMovies() {
+        const url = `https://api.themoviedb.org/3/movie/top_rated?api_key=${store.apiKey}`;
+        axios.get(url).then((risposta) => {
+            this.store.movies = risposta.data.results;
+        });
     },
     mounted() {
         this.getTopMovies();
@@ -69,12 +67,8 @@ export default {
             </div>
             <div class="boxSearch">
                 <div class="input">
-                    <input type="text" v-model="queryFilm" @keyup="searchMovies" placeholder="Cerca film " />
-                    <button @click="searchMovies">Cerca film</button>
-                </div>
-                <div class="button">
-                    <input type="text" v-model="querySeries" @keyup="searchSeries" placeholder="Cerca serie tv" />
-                    <button @click="searchSeries">Cerca Serie tv</button>
+                    <input type="text" v-model="query" @keyup="search" placeholder="Cerca film o serie tv" />
+                    <button @click="search">Cerca film</button>
                 </div>
             </div>
             <div class="boxFilm">
@@ -87,15 +81,18 @@ export default {
                         </div>
                         <div class="cardInfo">
                             <h2>{{ movie.title }}</h2>
-                            <p>Titolo originale: {{ movie.original_title }}</p>
+                            <p v-if="movie.original_title || movie.name">Titolo originale: {{ movie.original_title ||
+                                movie.name }}</p>
                             <div class="iconBox">
                                 <img :alt="movie.original_language"
                                     :src="`https://unpkg.com/language-icons/icons/${movie.original_language}.svg`">
                             </div>
-                            <p>Voto: {{ movie.vote_average }}</p>
                             <div class="stars">
                                 <i v-for="n in Math.ceil(movie.vote_average / 2)" class="fas fa-star"></i>
                                 <i v-for="n in 5 - Math.ceil(movie.vote_average / 2)" class="far fa-star"></i>
+                            </div>
+                            <div class="description">
+                                <span>Overview: {{ movie.overview }}</span>
                             </div>
                         </div>
                     </div>
@@ -104,6 +101,7 @@ export default {
         </div>
     </header>
 </template>
+
 
 <style lang="scss" scoped>
 .container {
@@ -135,22 +133,31 @@ export default {
     .card {
         width: calc(100% / 5);
         padding: 5px;
+        position: relative;
+        height: 400px;
+        overflow-y: auto;
 
         .cardImg {
-            height: 60%;
+            z-index: 1;
+            height: 100%;
+            position: relative;
 
             img {
                 width: 100%;
                 height: 100%;
+                position: absolute;
+
+                &:hover {
+                    opacity: 0;
+                }
             }
         }
 
         .cardInfo {
-            height: 40%;
+            top: 0;
             color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
+            position: absolute;
+            display: none;
 
             .iconBox {
                 width: 2rem;
@@ -160,10 +167,12 @@ export default {
                     width: 100%;
                     height: 100%;
                 }
-
             }
         }
-    }
 
+        &:hover .cardInfo {
+            display: block;
+        }
+    }
 }
 </style>
